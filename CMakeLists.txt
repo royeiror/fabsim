@@ -78,12 +78,24 @@ target_link_libraries(fabsim_gui
 include(FetchContent)
 
 # tinyobjloader
+include(FetchContent)
+
 FetchContent_Declare(
-  tinyobjloader
-  GIT_REPOSITORY https://github.com/tinyobjloader/tinyobjloader.git
-  GIT_TAG v2.0.0
+    tinyobjloader
+    GIT_REPOSITORY https://github.com/tinyobjloader/tinyobjloader.git
+    GIT_TAG v2.0.0
 )
+
 FetchContent_MakeAvailable(tinyobjloader)
+
+# Disable building examples/tests to avoid subproject failures
+if (TARGET tinyobjloader-examples)
+    set_target_properties(tinyobjloader-examples PROPERTIES EXCLUDE_FROM_ALL TRUE)
+endif()
+if (TARGET tinyobjloader-shared)
+    set_target_properties(tinyobjloader-shared PROPERTIES EXCLUDE_FROM_ALL TRUE)
+endif()
+
 
 # OpenGL + GLEW from vcpkg
 find_package(OpenGL REQUIRED)
