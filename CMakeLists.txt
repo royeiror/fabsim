@@ -74,3 +74,34 @@ target_link_libraries(fabsim_gui
     glad
     opengl32
 )
+# --- Dependencies for viewer ---
+include(FetchContent)
+
+# tinyobjloader
+FetchContent_Declare(
+  tinyobjloader
+  GIT_REPOSITORY https://github.com/tinyobjloader/tinyobjloader.git
+  GIT_TAG v2.0.0
+)
+FetchContent_MakeAvailable(tinyobjloader)
+
+# OpenGL + GLEW from vcpkg
+find_package(OpenGL REQUIRED)
+find_package(GLEW REQUIRED)
+# Build Viewer
+add_executable(fabsim_viewer
+    viewer/Viewer.cpp
+    viewer/Viewer.h
+    viewer/shaders/simple.vert
+    viewer/shaders/simple.frag
+)
+
+target_include_directories(fabsim_viewer PRIVATE viewer)
+
+target_link_libraries(fabsim_viewer
+    PRIVATE
+        tinyobjloader
+        OpenGL::GL
+        GLEW::GLEW
+)
+
