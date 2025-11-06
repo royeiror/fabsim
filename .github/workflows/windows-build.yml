@@ -13,11 +13,6 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      # REMOVE TESTS FOLDER
-      - name: Remove tests directory
-        run: |
-          Remove-Item -Recurse -Force tests
-
       - name: Install vcpkg
         run: |
           git clone https://github.com/microsoft/vcpkg.git
@@ -33,7 +28,8 @@ jobs:
         run: |
           cmake -B build -S . `
             -DCMAKE_TOOLCHAIN_FILE="${{ github.workspace }}\vcpkg\scripts\buildsystems\vcpkg.cmake" `
-            -DCMAKE_BUILD_TYPE=Release
+            -DCMAKE_BUILD_TYPE=Release `
+            -DFABSIM_BUILD_TESTS=OFF
 
       - name: Build
         run: cmake --build build --config Release
