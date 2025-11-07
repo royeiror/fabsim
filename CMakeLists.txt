@@ -88,6 +88,13 @@ FetchContent_Declare(
 
 FetchContent_MakeAvailable(tinyobjloader)
 
+if (TARGET tinyobjloader-examples)
+    set_target_properties(tinyobjloader-examples PROPERTIES EXCLUDE_FROM_ALL TRUE)
+endif()
+if (TARGET tinyobjloader-shared)
+    set_target_properties(tinyobjloader-shared PROPERTIES EXCLUDE_FROM_ALL TRUE)
+endif()
+
 # Disable building examples/tests to avoid subproject failures
 if (TARGET tinyobjloader-examples)
     set_target_properties(tinyobjloader-examples PROPERTIES EXCLUDE_FROM_ALL TRUE)
