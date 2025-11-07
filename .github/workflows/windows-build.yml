@@ -24,6 +24,9 @@ jobs:
           .\vcpkg\vcpkg.exe install cgal boost eigen3 cli11 glew glfw3 --triplet x64-windows
           .\vcpkg\vcpkg.exe integrate install
 
+      - name: Remove cached deps
+        run: rm -rf build/_deps || true
+
 
       - name: Configure CMake
         run: |
