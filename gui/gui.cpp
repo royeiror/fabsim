@@ -1,4 +1,5 @@
 #include <windows.h>
+#include "core.h"
 
 LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) {
     switch(msg) {
@@ -19,10 +20,13 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE, LPSTR, int nCmdShow) {
     RegisterClass(&wc);
 
     HWND hwnd = CreateWindow(CLASS_NAME, "My GUI", WS_OVERLAPPEDWINDOW,
-                             CW_USEDEFAULT, CW_USEDEFAULT, 640, 480,
-                             nullptr, nullptr, hInstance, nullptr);
+        CW_USEDEFAULT, CW_USEDEFAULT, 640, 480,
+        nullptr, nullptr, hInstance, nullptr);
 
     ShowWindow(hwnd, nCmdShow);
+
+    int result = add_numbers(4, 5); // prove core library works
+    (void)result;
 
     MSG msg = {};
     while(GetMessage(&msg, nullptr, 0, 0)) {
