@@ -78,12 +78,13 @@ target_link_libraries(fabsim_gui
 include(FetchContent)
 
 # tinyobjloader
+
 include(FetchContent)
 
 FetchContent_Declare(
   tinyobjloader
   GIT_REPOSITORY https://github.com/tinyobjloader/tinyobjloader.git
-  GIT_TAG v1.0.6
+  GIT_TAG v2.0.0rc13
 )
 
 set(TINYOBJLOADER_BUILD_SHARED_LIBS OFF CACHE BOOL "" FORCE)
@@ -91,13 +92,8 @@ set(TINYOBJLOADER_BUILD_OBJ_STANDALONE OFF CACHE BOOL "" FORCE)
 
 FetchContent_MakeAvailable(tinyobjloader)
 
+target_link_libraries(fabsim_viewer PRIVATE tinyobjloader)
 
-if (TARGET tinyobjloader-examples)
-    set_target_properties(tinyobjloader-examples PROPERTIES EXCLUDE_FROM_ALL TRUE)
-endif()
-if (TARGET tinyobjloader-shared)
-    set_target_properties(tinyobjloader-shared PROPERTIES EXCLUDE_FROM_ALL TRUE)
-endif()
 
 # Disable building examples/tests to avoid subproject failures
 if (TARGET tinyobjloader-examples)
