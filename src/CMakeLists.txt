@@ -1,5 +1,7 @@
-add_library(core STATIC core.cpp core.h)
+file(GLOB FABSIM_CORE_SOURCES
+    *.cpp
+)
 
-target_link_libraries(core PUBLIC Eigen3::Eigen)
-
-target_include_directories(core PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
+add_library(fabsim STATIC ${FABSIM_CORE_SOURCES})
+target_include_directories(fabsim PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/../include)
+target_link_libraries(fabsim PUBLIC Eigen3::Eigen)
