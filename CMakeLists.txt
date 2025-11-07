@@ -9,7 +9,9 @@ option(BUILD_GUI "Build GUI application" ON)
 
 include(FetchContent)
 
-# Fetch Eigen automatically
+# --- Fetch Eigen without tests ---
+set(EIGEN_BUILD_TESTING OFF CACHE BOOL "Disable Eigen tests" FORCE)
+
 FetchContent_Declare(
   eigen
   GIT_REPOSITORY https://gitlab.com/libeigen/eigen.git
@@ -17,10 +19,8 @@ FetchContent_Declare(
 )
 FetchContent_MakeAvailable(eigen)
 
-# If you have src/ folder for core logic:
 add_subdirectory(src)
 
 if(BUILD_GUI)
-    # GUI code assumed to be in gui/ folder
     add_subdirectory(gui)
 endif()
