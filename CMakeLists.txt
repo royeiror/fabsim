@@ -1,15 +1,14 @@
 cmake_minimum_required(VERSION 3.19)
-project(fabsim LANGUAGES CXX)
+project(fabsim)
 
 set(CMAKE_CXX_STANDARD 17)
-set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-option(BUILD_GUI "Build GUI application" ON)
-option(BUILD_VIEWER "Build Viewer application" ON)
-
+# -------------------------------------------------------
+# FetchContent Setup
+# -------------------------------------------------------
 include(FetchContent)
 
-# -------- Fetch Eigen --------
+# Eigen
 FetchContent_Declare(
   eigen
   GIT_REPOSITORY https://gitlab.com/libeigen/eigen.git
@@ -17,22 +16,30 @@ FetchContent_Declare(
 )
 FetchContent_MakeAvailable(eigen)
 
-# -------- Fetch tinyobjloader --------
+# TinyObjLoader
 FetchContent_Declare(
   tinyobjloader
   GIT_REPOSITORY https://github.com/tinyobjloader/tinyobjloader.git
-  GIT_TAG v2.0.0rc13
+  GIT_TAG v2.0.0
 )
 FetchContent_MakeAvailable(tinyobjloader)
 
+# GLFW
+FetchContent_Declare(
+  glfw
+  GIT_REPOSITORY https://github.com/glfw/glfw.git
+  GIT_TAG 3.3.9
+)
+FetchContent_MakeAvailable(glfw)
+
+# GLAD (OpenGL loader)
+FetchContent_Declare(
+  glad
+  GIT_REPOSITORY https://github.com/Dav1dde/glad.git
+  GIT_TAG v0.1.36
+)
+FetchContent_MakeAvailable(glad)
+
 add_subdirectory(src)
-
-if(BUILD_GUI)
-    add_subdirectory(gui)
-endif()
-
-if(BUILD_VIEWER)
-    add_subdirectory(viewer)
-endif()
-
-message(STATUS "Build configuration complete.")
+add_subdirectory(gui)
+add_subdirectory(viewer)
