@@ -8,7 +8,7 @@ option(BUILD_GUI "Build graphical interface" ON)
 
 include(FetchContent)
 
-# --- Eigen (Header Only) ---
+# --- Eigen ---
 FetchContent_Declare(
     eigen
     GIT_REPOSITORY https://gitlab.com/libeigen/eigen.git
@@ -16,15 +16,15 @@ FetchContent_Declare(
 )
 FetchContent_MakeAvailable(eigen)
 
-# --- tinyobjloader ---
+# --- tinyobjloader (PINNED WORKING TAG) ---
 FetchContent_Declare(
     tinyobjloader
     GIT_REPOSITORY https://github.com/tinyobjloader/tinyobjloader.git
-    GIT_TAG master
+    GIT_TAG v1.0.6
 )
 FetchContent_MakeAvailable(tinyobjloader)
 
-# --- GUI deps ---
+# --- GUI dependencies ---
 if (BUILD_GUI)
     # GLAD
     FetchContent_Declare(
@@ -38,12 +38,12 @@ if (BUILD_GUI)
     FetchContent_Declare(
         glfw
         GIT_REPOSITORY https://github.com/glfw/glfw.git
-        GIT_TAG latest
+        GIT_TAG 3.3.8
     )
     FetchContent_MakeAvailable(glfw)
 endif()
 
-# --- Collect sources ---
+# --- Source files ---
 file(GLOB_RECURSE FABSIM_SOURCES CONFIGURE_DEPENDS
     src/*.cpp
 )
@@ -52,7 +52,7 @@ if(NOT FABSIM_SOURCES)
     message(FATAL_ERROR "No source files found in src/. Add .cpp files to src/.")
 endif()
 
-# --- Core library ---
+# --- Main Core Library ---
 add_library(fabsim_lib ${FABSIM_SOURCES})
 target_include_directories(fabsim_lib PUBLIC include)
 target_link_libraries(fabsim_lib PUBLIC Eigen3::Eigen tinyobjloader)
