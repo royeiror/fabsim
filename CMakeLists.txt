@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.14)
+cmake_minimum_required(VERSION 3.16)
 project(fabsim LANGUAGES CXX)
 
 set(CMAKE_CXX_STANDARD 17)
@@ -6,10 +6,10 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 option(BUILD_GUI "Build GUI viewer" ON)
 
-# --- FetchContent setup
+# Dependencies
 include(FetchContent)
 
-# Eigen (header-only)
+# ---------------- Eigen (header only) ----------------
 FetchContent_Declare(
   eigen
   GIT_REPOSITORY https://gitlab.com/libeigen/eigen.git
@@ -17,84 +17,75 @@ FetchContent_Declare(
 )
 FetchContent_MakeAvailable(eigen)
 
-# tinyobjloader
+# ---------------- tinyobjloader ----------------
 FetchContent_Declare(
   tinyobjloader
   GIT_REPOSITORY https://github.com/tinyobjloader/tinyobjloader.git
-  GIT_TAG v2.0.0
+  GIT_TAG v1.0.6
 )
 FetchContent_MakeAvailable(tinyobjloader)
 
-# GLFW
+# ---------------- GLFW ----------------
 FetchContent_Declare(
   glfw
   GIT_REPOSITORY https://github.com/glfw/glfw.git
-  GIT_TAG 3.4
+  GIT_TAG 3.3.8
 )
 FetchContent_MakeAvailable(glfw)
 
-# glad (OpenGL loader)
+# ---------------- GLAD ----------------
 FetchContent_Declare(
   glad
   GIT_REPOSITORY https://github.com/Dav1dde/glad.git
   GIT_TAG v0.1.36
 )
+set(GLAD_PROFILE core)
+set(GLAD_API gl=4.1)
 FetchContent_MakeAvailable(glad)
 
-# imgui
+# ---------------- ImGui ----------------
 FetchContent_Declare(
   imgui
   GIT_REPOSITORY https://github.com/ocornut/imgui.git
-  GIT_TAG v1.91.0
+  GIT_TAG v1.90
 )
 FetchContent_MakeAvailable(imgui)
 
-
-# --- Core library
-file(GLOB FSIM_SRC
-  "fsim/*.cpp"
-  "fsim/*.h"
+# ---------------- FSim library ----------------
+file(GLOB FSIM_SRC CONFIGURE_DEPENDS
+    fsim/src/*.cpp
+    fsim/src/*/*.cpp
 )
 
-if(NOT FSIM_SRC)
-  message(FATAL_ERROR "No source files found in fsim/.")
-endif()
+add_library(fabsim_lib ${FSIM_SRC})
+target_include_directories(fabsim_lib PUBLIC fsim/include)
+target_link_libraries(fabsim_lib PUBLIC Eigen3::Eigen tinyobjloader)
 
-add_library(fabsim_lib STATIC ${FSIM_SRC})
-target_include_directories(fabsim_lib PUBLIC fsim ${eigen_SOURCE_DIR})
-target_link_libraries(fabsim_lib PUBLIC tinyobjloader)
-
-
-# --- GUI
+# ---------------- GUI ----------------
 if(BUILD_GUI)
-    file(GLOB GUI_SRC
-        "gui/*.cpp"
-        "gui/*.h"
+    file(GLOB GUI_SRC CONFIGURE_DEPENDS
+        gui/*.cpp
+        gui/*/*.cpp
     )
 
     add_executable(fabsim_gui ${GUI_SRC})
 
-    target_include_directories(fabsim_gui PUBLIC
-        gui
-        ${eigen_SOURCE_DIR}
-        ${imgui_SOURCE_DIR}
-    )
+    target_include_directories(fabsim_gui PUBLIC gui fsim/include)
 
     target_link_libraries(fabsim_gui
         PRIVATE
-        fabsim_lib
-        glfw
-        glad
+            fabsim_lib
+            glfw
+            glad
+            imgui
+            opengl32
     )
-
-    # imgui backend build
-    target_sources(fabsim_gui PRIVATE
-        ${imgui_SOURCE_DIR}/imgui.cpp
-        ${imgui_SOURCE_DIR}/imgui_draw.cpp
-        ${imgui_SOURCE_DIR}/imgui_tables.cpp
-        ${imgui_SOURCE_DIR}/imgui_widgets.cpp
-        ${imgui_SOURCE_DIR}/backends/imgui_impl_glfw.cpp
-        ${imgui_SOURCE_DIR}/backends/imgui_impl_opengl3.cpp
-    )
-
 endif()
+
+# ---------------- Example CLI (optional) ----------------
+file(GLOB EXAMPLES CONFIGURE_DEPENDS examples/*.cpp)
+foreach(src ${EXAMPLES})
+    get_filename_component(name ${src} NAME_WE)
+    add_executable(${name} ${src})
+    target_link_libraries(${name} PRIVATE fabsim_lib)
+endforeach()
