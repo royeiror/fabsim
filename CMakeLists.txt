@@ -16,7 +16,7 @@ FetchContent_Declare(
 )
 FetchContent_MakeAvailable(eigen)
 
-# --- tinyobjloader (PINNED WORKING TAG) ---
+# --- tinyobjloader ---
 FetchContent_Declare(
     tinyobjloader
     GIT_REPOSITORY https://github.com/tinyobjloader/tinyobjloader.git
@@ -24,15 +24,29 @@ FetchContent_Declare(
 )
 FetchContent_MakeAvailable(tinyobjloader)
 
-# --- GUI dependencies ---
+# --- Source files (.cpp in src/) ---
+file(GLOB_RECURSE FABSIM_SOURCES CONFIGURE_DEPENDS src/*.cpp)
+if(NOT FABSIM_SOURCES)
+    message(FATAL_ERROR "No .cpp files found in src/. Add source files to src/")
+endif()
+
+# --- Main Library ---
+add_library(fabsim_lib ${FABSIM_SOURCES})
+target_include_directories(fabsim_lib PUBLIC include)
+target_link_libraries(fabsim_lib PUBLIC Eigen3::Eigen tinyobjloader)
+
+# --- GUI Build ---
 if (BUILD_GUI)
-    # GLAD
+
+    # GLAD (BUILD GLAD AS LIBRARY)
     FetchContent_Declare(
         glad
         GIT_REPOSITORY https://github.com/Dav1dde/glad.git
         GIT_TAG v0.1.36
     )
     FetchContent_MakeAvailable(glad)
+    add_library(glad_lib ${glad_SOURCE_DIR}/src/glad.c)
+    target_include_directories(glad_lib PUBLIC ${glad_SOURCE_DIR}/include)
 
     # GLFW
     FetchContent_Declare(
@@ -41,31 +55,21 @@ if (BUILD_GUI)
         GIT_TAG 3.3.8
     )
     FetchContent_MakeAvailable(glfw)
-endif()
 
-# --- Source files ---
-file(GLOB_RECURSE FABSIM_SOURCES CONFIGURE_DEPENDS
-    src/*.cpp
-)
-
-if(NOT FABSIM_SOURCES)
-    message(FATAL_ERROR "No source files found in src/. Add .cpp files to src/.")
-endif()
-
-# --- Main Core Library ---
-add_library(fabsim_lib ${FABSIM_SOURCES})
-target_include_directories(fabsim_lib PUBLIC include)
-target_link_libraries(fabsim_lib PUBLIC Eigen3::Eigen tinyobjloader)
-
-# --- GUI Executable ---
-if (BUILD_GUI)
+    # GUI Executable
     add_executable(fabsim_gui app/main.cpp)
-    target_include_directories(fabsim_gui PUBLIC include)
-    target_link_libraries(fabsim_gui PRIVATE fabsim_lib glad glfw)
+    target_include_directories(fabsim_gui PUBLIC include ${glad_SOURCE_DIR}/include)
+
+    target_link_libraries(fabsim_gui PRIVATE
+        fabsim_lib
+        glad_lib
+        glfw
+    )
 
     if(MSVC)
         target_compile_definitions(fabsim_gui PRIVATE _CRT_SECURE_NO_WARNINGS)
     endif()
+
 endif()
 
 message(STATUS "BUILD_GUI = ${BUILD_GUI}")
