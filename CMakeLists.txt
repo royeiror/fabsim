@@ -30,23 +30,20 @@ if(NOT FABSIM_SOURCES)
     message(FATAL_ERROR "No .cpp files found in src/. Add source files to src/")
 endif()
 
-# --- Main Library ---
 add_library(fabsim_lib ${FABSIM_SOURCES})
 target_include_directories(fabsim_lib PUBLIC include)
 target_link_libraries(fabsim_lib PUBLIC Eigen3::Eigen tinyobjloader)
 
-# --- GUI Build ---
+# --- GUI ---
 if (BUILD_GUI)
 
-    # GLAD (BUILD GLAD AS LIBRARY)
+    # GLAD (use provided CMake target glad::glad)
     FetchContent_Declare(
         glad
         GIT_REPOSITORY https://github.com/Dav1dde/glad.git
         GIT_TAG v0.1.36
     )
     FetchContent_MakeAvailable(glad)
-    add_library(glad_lib ${glad_SOURCE_DIR}/src/glad.c)
-    target_include_directories(glad_lib PUBLIC ${glad_SOURCE_DIR}/include)
 
     # GLFW
     FetchContent_Declare(
@@ -56,20 +53,18 @@ if (BUILD_GUI)
     )
     FetchContent_MakeAvailable(glfw)
 
-    # GUI Executable
     add_executable(fabsim_gui app/main.cpp)
-    target_include_directories(fabsim_gui PUBLIC include ${glad_SOURCE_DIR}/include)
+    target_include_directories(fabsim_gui PUBLIC include)
 
     target_link_libraries(fabsim_gui PRIVATE
         fabsim_lib
-        glad_lib
+        glad::glad       # <-- Correct glad target
         glfw
     )
 
     if(MSVC)
         target_compile_definitions(fabsim_gui PRIVATE _CRT_SECURE_NO_WARNINGS)
     endif()
-
 endif()
 
 message(STATUS "BUILD_GUI = ${BUILD_GUI}")
