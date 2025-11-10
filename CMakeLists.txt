@@ -4,32 +4,26 @@ project(fabsim LANGUAGES CXX)
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 
-# Dependencies
-find_package(Eigen3 3.3 REQUIRED)
+# Eigen is header-only. Just include the path.
+include_directories(${PROJECT_SOURCE_DIR}/deps/eigen)
+include_directories(${PROJECT_SOURCE_DIR}/include)
 
-include_directories(
-    ${PROJECT_SOURCE_DIR}/include
-    ${EIGEN3_INCLUDE_DIRS}
-)
-
-# Collect source files
+# Core sources
 set(FABSIM_SOURCES
     src/ElasticRod.cpp
     src/HingeElement.cpp
     src/LocalFrame.cpp
     src/RodStencil.cpp
-    src/geometry.cpp        # ✅ THIS WAS MISSING
+    src/geometry.cpp
 )
 
 add_library(fabsim_lib ${FABSIM_SOURCES})
 
-target_link_libraries(fabsim_lib Eigen3::Eigen)
-
-# Executable (CLI)
+# CLI executable
 add_executable(fabsim src/main.cpp)
 target_link_libraries(fabsim fabsim_lib)
 
-# GUI Support
+# GUI support
 option(BUILD_GUI "Build GUI application" OFF)
 
 if(BUILD_GUI)
