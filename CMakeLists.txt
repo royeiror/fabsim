@@ -10,8 +10,9 @@ option(BUILD_GUI "Build graphical interface" ON)
 # Eigen (header-only)
 find_package(Eigen3 REQUIRED)
 
-# tinyobjloader (download + build automatically)
 include(FetchContent)
+
+# tinyobjloader
 FetchContent_Declare(
     tinyobjloader
     GIT_REPOSITORY https://github.com/tinyobjloader/tinyobjloader.git
@@ -19,7 +20,7 @@ FetchContent_Declare(
 )
 FetchContent_MakeAvailable(tinyobjloader)
 
-# If GUI is enabled, also fetch GL stuff
+# If GUI enabled, load GL dependencies
 if (BUILD_GUI)
     # GLAD
     FetchContent_Declare(
@@ -38,8 +39,7 @@ if (BUILD_GUI)
     FetchContent_MakeAvailable(glfw)
 endif()
 
-# --- Source files ---
-# Collect *all* .cpp files under src/
+# --- Collect sources ---
 file(GLOB_RECURSE FABSIM_SOURCES CONFIGURE_DEPENDS
     src/*.cpp
 )
@@ -48,25 +48,21 @@ if(NOT FABSIM_SOURCES)
     message(FATAL_ERROR "No source files found in src/. You must add code before building.")
 endif()
 
-# --- Library ---
+# --- Core Library ---
 add_library(fabsim_lib ${FABSIM_SOURCES})
 target_include_directories(fabsim_lib PUBLIC include)
 target_link_libraries(fabsim_lib PUBLIC Eigen3::Eigen tinyobjloader)
 
-
-# --- Optional GUI binary ---
+# --- GUI Executable ---
 if (BUILD_GUI)
     add_executable(fabsim_gui app/main.cpp)
 
     target_include_directories(fabsim_gui PUBLIC include)
+    target_link_libraries(fabsim_gui PRIVATE fabsim_lib glad glfw)
 
-    target_link_libraries(fabsim_gui
-        PRIVATE
-            fabsim_lib
-            glad
-            glfw
-    )
-
-    # Windows needs this
     if (MSVC)
-        target_compil_
+        target_compile_definitions(fabsim_gui PRIVATE _CRT_SECURE_NO_WARNINGS)
+    endif()
+endif()
+
+message(STATUS "BUILD_GUI = ${BUILD_GUI}")
