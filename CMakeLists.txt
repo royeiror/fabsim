@@ -1,45 +1,58 @@
-cmake_minimum_required(VERSION 3.19)
-project(fabsim)
+cmake_minimum_required(VERSION 3.15)
+project(fabsim LANGUAGES C CXX)
 
-set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD 11)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-# -------------------------------------------------------
-# FetchContent Setup
-# -------------------------------------------------------
+option(BUILD_GUI "Build GUI application" ON)
+
 include(FetchContent)
 
-# Eigen
+# ---- Eigen ----
 FetchContent_Declare(
   eigen
   GIT_REPOSITORY https://gitlab.com/libeigen/eigen.git
   GIT_TAG 3.4.0
 )
 FetchContent_MakeAvailable(eigen)
+message(STATUS "Eigen included at: ${eigen_SOURCE_DIR}")
 
-# TinyObjLoader
+# ---- tinyobjloader ----
 FetchContent_Declare(
   tinyobjloader
   GIT_REPOSITORY https://github.com/tinyobjloader/tinyobjloader.git
-  GIT_TAG v2.0.0
+  GIT_TAG v1.0.6
 )
 FetchContent_MakeAvailable(tinyobjloader)
+message(STATUS "tinyobjloader included at: ${tinyobjloader_SOURCE_DIR}")
 
-# GLFW
-FetchContent_Declare(
-  glfw
-  GIT_REPOSITORY https://github.com/glfw/glfw.git
-  GIT_TAG 3.3.9
+# ---- Source ----
+file(GLOB FABSIM_SOURCES
+    src/*.cpp
+    src/*.h
 )
-FetchContent_MakeAvailable(glfw)
 
-# GLAD (OpenGL loader)
-FetchContent_Declare(
-  glad
-  GIT_REPOSITORY https://github.com/Dav1dde/glad.git
-  GIT_TAG v0.1.36
+add_executable(fabsim ${FABSIM_SOURCES})
+target_include_directories(fabsim PRIVATE
+    ${eigen_SOURCE_DIR}
+    ${tinyobjloader_SOURCE_DIR}
 )
-FetchContent_MakeAvailable(glad)
 
-add_subdirectory(src)
-add_subdirectory(gui)
-add_subdirectory(viewer)
+# ---- GUI Option ----
+if(BUILD_GUI)
+    add_definitions(-DFABSIM_GUI)
+    message(STATUS "GUI build enabled")
+
+    # If your GUI uses GLFW + OpenGL, enable these:
+    find_package(OpenGL REQUIRED)
+    FetchContent_Declare(
+        glfw
+        GIT_REPOSITORY https://github.com/glfw/glfw.git
+        GIT_TAG 3.4
+    )
+    FetchContent_MakeAvailable(glfw)
+
+    target_link_libraries(fabsim PRIVATE glfw OpenGL::GL)
+else()
+    message(STATUS "GUI build disabled (CLI only)")
+endif()
