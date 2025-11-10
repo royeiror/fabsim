@@ -6,13 +6,17 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 option(BUILD_GUI "Build graphical interface" ON)
 
-# --- Dependencies ---
-# Eigen (header-only)
-find_package(Eigen3 REQUIRED)
-
 include(FetchContent)
 
-# tinyobjloader
+# --- Eigen (Header Only) ---
+FetchContent_Declare(
+    eigen
+    GIT_REPOSITORY https://gitlab.com/libeigen/eigen.git
+    GIT_TAG 3.4.0
+)
+FetchContent_MakeAvailable(eigen)
+
+# --- tinyobjloader ---
 FetchContent_Declare(
     tinyobjloader
     GIT_REPOSITORY https://github.com/tinyobjloader/tinyobjloader.git
@@ -20,7 +24,7 @@ FetchContent_Declare(
 )
 FetchContent_MakeAvailable(tinyobjloader)
 
-# If GUI enabled, load GL dependencies
+# --- GUI deps ---
 if (BUILD_GUI)
     # GLAD
     FetchContent_Declare(
@@ -45,10 +49,10 @@ file(GLOB_RECURSE FABSIM_SOURCES CONFIGURE_DEPENDS
 )
 
 if(NOT FABSIM_SOURCES)
-    message(FATAL_ERROR "No source files found in src/. You must add code before building.")
+    message(FATAL_ERROR "No source files found in src/. Add .cpp files to src/.")
 endif()
 
-# --- Core Library ---
+# --- Core library ---
 add_library(fabsim_lib ${FABSIM_SOURCES})
 target_include_directories(fabsim_lib PUBLIC include)
 target_link_libraries(fabsim_lib PUBLIC Eigen3::Eigen tinyobjloader)
@@ -56,11 +60,10 @@ target_link_libraries(fabsim_lib PUBLIC Eigen3::Eigen tinyobjloader)
 # --- GUI Executable ---
 if (BUILD_GUI)
     add_executable(fabsim_gui app/main.cpp)
-
     target_include_directories(fabsim_gui PUBLIC include)
     target_link_libraries(fabsim_gui PRIVATE fabsim_lib glad glfw)
 
-    if (MSVC)
+    if(MSVC)
         target_compile_definitions(fabsim_gui PRIVATE _CRT_SECURE_NO_WARNINGS)
     endif()
 endif()
