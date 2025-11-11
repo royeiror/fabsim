@@ -1,82 +1,67 @@
-cmake_minimum_required(VERSION 3.10)
-project(fabsim LANGUAGES C CXX)
+cmake_minimum_required(VERSION 3.16)
+project(fabsim)
 
-set(CMAKE_CXX_STANDARD 11)
-set(CMAKE_CXX_STANDARD_REQUIRED ON)
+set(CMAKE_CXX_STANDARD 17)
 
 include(FetchContent)
 
-# --------------------------------------------------------------------
-# Fetch Eigen
-# --------------------------------------------------------------------
-FetchContent_Declare(
-  eigen
-  GIT_REPOSITORY https://gitlab.com/libeigen/eigen.git
-  GIT_TAG 3.4.0
-)
-FetchContent_MakeAvailable(eigen)
+# ---- Dependencies ----
 
-# --------------------------------------------------------------------
-# Fetch tinyobjloader
-# --------------------------------------------------------------------
-FetchContent_Declare(
-  tinyobjloader
-  GIT_REPOSITORY https://github.com/tinyobjloader/tinyobjloader.git
-  GIT_TAG v1.0.6
-)
-FetchContent_MakeAvailable(tinyobjloader)
-
-# --------------------------------------------------------------------
-# Fetch glad
-# --------------------------------------------------------------------
-FetchContent_Declare(
-  glad
-  GIT_REPOSITORY https://github.com/Dav1dde/glad.git
-  GIT_TAG v0.1.36
-)
-FetchContent_MakeAvailable(glad)
-
-# --------------------------------------------------------------------
-# Fetch GLFW (fixes your error)
-# --------------------------------------------------------------------
-FetchContent_Declare(
-  glfw
-  GIT_REPOSITORY https://github.com/glfw/glfw.git
-  GIT_TAG 3.3.8
-)
-
-# Prevent GLFW from building tests, docs, or examples (fixes your CI failure)
+# GLFW
 set(GLFW_BUILD_EXAMPLES OFF CACHE BOOL " " FORCE)
 set(GLFW_BUILD_TESTS OFF CACHE BOOL " " FORCE)
 set(GLFW_BUILD_DOCS OFF CACHE BOOL " " FORCE)
 set(GLFW_INSTALL OFF CACHE BOOL " " FORCE)
 
+FetchContent_Declare(
+    glfw
+    GIT_REPOSITORY https://github.com/glfw/glfw.git
+    GIT_TAG 3.3.8
+)
 FetchContent_MakeAvailable(glfw)
 
-# --------------------------------------------------------------------
-# Include directories
-# --------------------------------------------------------------------
-include_directories(
-    ${eigen_SOURCE_DIR}
-    ${tinyobjloader_SOURCE_DIR}
-    ${PROJECT_SOURCE_DIR}/include
+# GLAD
+FetchContent_Declare(
+    glad
+    GIT_REPOSITORY https://github.com/Dav1dde/glad.git
+    GIT_TAG v0.1.36
+)
+FetchContent_MakeAvailable(glad)
+
+# ---- IMGUI (local vendor) ----
+set(IMGUI_DIR ${CMAKE_SOURCE_DIR}/3rdparty/imgui)
+file(GLOB IMGUI_SRC
+    ${IMGUI_DIR}/*.cpp
+    ${IMGUI_DIR}/backends/imgui_impl_glfw.cpp
+    ${IMGUI_DIR}/backends/imgui_impl_opengl3.cpp
+)
+add_library(imgui STATIC ${IMGUI_SRC})
+target_include_directories(imgui PUBLIC
+    ${IMGUI_DIR}
+    ${IMGUI_DIR}/backends
+)
+target_link_libraries(imgui PUBLIC glfw glad)
+
+# ---- Core Library ----
+file(GLOB FABSIM_CORE
+    src/*.cpp
+    include/fsim/*.h
 )
 
-# --------------------------------------------------------------------
-# Main executable (fab)
-# --------------------------------------------------------------------
-file(GLOB FABSIM_SOURCES src/*.cpp)
-add_executable(fab ${FABSIM_SOURCES})
-target_link_libraries(fab PRIVATE tinyobjloader)
+add_library(fabsim_core STATIC ${FABSIM_CORE})
+target_include_directories(fabsim_core PUBLIC include)
+target_link_libraries(fabsim_core PUBLIC)
 
-# --------------------------------------------------------------------
-# GUI build (optional)
-# --------------------------------------------------------------------
-option(BUILD_GUI "Build OpenGL GUI viewer" ON)
+# ---- CLI Tool ----
+add_executable(fab src/main.cpp)
+target_link_libraries(fab PUBLIC fabsim_core)
 
-if(BUILD_GUI)
-    file(GLOB GUI_SOURCES gui/*.cpp)
-    add_executable(fabgui ${GUI_SOURCES})
-    target_link_libraries(fabgui PRIVATE glfw glad tinyobjloader)
-    target_include_directories(fabgui PRIVATE gui/)
-endif()
+# ---- GUI ----
+add_executable(fabgui
+    gui/gui.cpp
+    gui/main.cpp
+    gui/viewer.cpp
+)
+
+target_include_directories(fabgui PUBLIC include gui ${IMGUI_DIR})
+target_link_libraries(fabgui PUBLIC fabsim_core imgui glfw glad)
