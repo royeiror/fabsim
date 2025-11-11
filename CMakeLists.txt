@@ -64,7 +64,11 @@ target_include_directories(imgui PUBLIC
 target_link_libraries(imgui PUBLIC glfw glad)
 
 # ---------------------- Application ----------------------
-file(GLOB FABSIM_SRC src/*.cpp)
+file(GLOB FABSIM_SRC
+  src/*.cpp
+  src/fsim/*.cpp
+)
+
 
 add_executable(fabsim_app ${FABSIM_SRC})
 
