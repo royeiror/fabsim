@@ -4,20 +4,18 @@ project(fabsim LANGUAGES CXX)
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-option(BUILD_GUI "Build GUI application" ON)
-
+# Dependencies
 include(FetchContent)
 
-# ---------------------- Dependencies ----------------------
-
-# Eigen (header-only)
+# Eigen
 FetchContent_Declare(
-  eigen
-  GIT_REPOSITORY https://gitlab.com/libeigen/eigen.git
-  GIT_TAG 3.4.0
+    eigen
+    GIT_REPOSITORY https://gitlab.com/libeigen/eigen.git
+    GIT_TAG 3.4.0
 )
 FetchContent_MakeAvailable(eigen)
 
+# tinyobjloader (old API that fabsim expects)
 FetchContent_Declare(
     tinyobjloader
     GIT_REPOSITORY https://github.com/tinyobjloader/tinyobjloader.git
@@ -25,50 +23,34 @@ FetchContent_Declare(
 )
 FetchContent_MakeAvailable(tinyobjloader)
 
-# GLAD (only needed for GUI)
-if(BUILD_GUI)
-  FetchContent_Declare(
+# glad
+FetchContent_Declare(
     glad
     GIT_REPOSITORY https://github.com/Dav1dde/glad.git
     GIT_TAG v0.1.36
-  )
-  FetchContent_MakeAvailable(glad)
+)
+FetchContent_MakeAvailable(glad)
 
-  FetchContent_Declare(
-    glfw
-    GIT_REPOSITORY https://github.com/glfw/glfw.git
-    GIT_TAG 3.3.8
-  )
-  FetchContent_MakeAvailable(glfw)
+# GLFW
+find_package(GLFW3 REQUIRED)
 
-  find_package(OpenGL REQUIRED)
-endif()
+# OpenGL
+find_package(OpenGL REQUIRED)
 
-# ---------------------- Core Library ----------------------
+# Executable (this replaces the broken src/... paths)
+add_executable(fabsim
+    app/main.cpp
+)
 
-file(GLOB FABCORE_SOURCES src/*.cpp)
-add_library(fabcore ${FABCORE_SOURCES})
-target_include_directories(fabcore PUBLIC src ${eigen_SOURCE_DIR})
-target_link_libraries(fabcore PUBLIC tinyobjloader)
+target_include_directories(fabsim PRIVATE
+    ${eigen_SOURCE_DIR}
+    ${tinyobjloader_SOURCE_DIR}
+    ${glad_SOURCE_DIR}/include
+)
 
-# ---------------------- CLI App ----------------------
-
-add_executable(fabsim src/cli/main.cpp)
-target_link_libraries(fabsim PRIVATE fabcore)
-
-# ---------------------- GUI App ----------------------
-
-if(BUILD_GUI)
-  add_executable(fabsim_gui src/gui/main.cpp)
-
-  target_link_libraries(fabsim_gui
-    PRIVATE fabcore
-    glfw
+target_link_libraries(fabsim PRIVATE
     glad
+    glfw
     OpenGL::GL
-  )
-
-  if(APPLE)
-    target_link_libraries(fabsim_gui PRIVATE "-framework Cocoa" "-framework IOKit" "-framework CoreVideo")
-  endif()
-endif()
+    tinyobjloader
+)
