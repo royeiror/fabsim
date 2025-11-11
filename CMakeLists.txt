@@ -1,67 +1,78 @@
-cmake_minimum_required(VERSION 3.16)
-project(fabsim)
+cmake_minimum_required(VERSION 3.14)
+project(fabsim LANGUAGES CXX)
 
 set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 include(FetchContent)
 
-# ---- Dependencies ----
+# -------------------------
+# Fetch Eigen automatically
+# -------------------------
+FetchContent_Declare(
+    eigen
+    GIT_REPOSITORY https://gitlab.com/libeigen/eigen.git
+    GIT_TAG 3.4.0
+)
+FetchContent_MakeAvailable(eigen)
 
-# GLFW
-set(GLFW_BUILD_EXAMPLES OFF CACHE BOOL " " FORCE)
-set(GLFW_BUILD_TESTS OFF CACHE BOOL " " FORCE)
-set(GLFW_BUILD_DOCS OFF CACHE BOOL " " FORCE)
-set(GLFW_INSTALL OFF CACHE BOOL " " FORCE)
-
+# -------------------------
+# GLAD + GLFW
+# -------------------------
 FetchContent_Declare(
     glfw
     GIT_REPOSITORY https://github.com/glfw/glfw.git
-    GIT_TAG 3.3.8
+    GIT_TAG 3.4
 )
 FetchContent_MakeAvailable(glfw)
 
-# GLAD
 FetchContent_Declare(
     glad
     GIT_REPOSITORY https://github.com/Dav1dde/glad.git
-    GIT_TAG v0.1.36
+    GIT_TAG v2.0.4
 )
 FetchContent_MakeAvailable(glad)
 
-# ---- IMGUI (local vendor) ----
-set(IMGUI_DIR ${CMAKE_SOURCE_DIR}/3rdparty/imgui)
-file(GLOB IMGUI_SRC
-    ${IMGUI_DIR}/*.cpp
-    ${IMGUI_DIR}/backends/imgui_impl_glfw.cpp
-    ${IMGUI_DIR}/backends/imgui_impl_opengl3.cpp
+# -------------------------
+# ImGui
+# -------------------------
+add_library(imgui
+    3rdparty/imgui/imgui.cpp
+    3rdparty/imgui/imgui_demo.cpp
+    3rdparty/imgui/imgui_draw.cpp
+    3rdparty/imgui/imgui_tables.cpp
+    3rdparty/imgui/imgui_widgets.cpp
+    3rdparty/imgui/backends/imgui_impl_glfw.cpp
+    3rdparty/imgui/backends/imgui_impl_opengl3.cpp
 )
-add_library(imgui STATIC ${IMGUI_SRC})
+
 target_include_directories(imgui PUBLIC
-    ${IMGUI_DIR}
-    ${IMGUI_DIR}/backends
-)
-target_link_libraries(imgui PUBLIC glfw glad)
-
-# ---- Core Library ----
-file(GLOB FABSIM_CORE
-    src/*.cpp
-    include/fsim/*.h
+    3rdparty/imgui
+    3rdparty/imgui/backends
 )
 
-add_library(fabsim_core STATIC ${FABSIM_CORE})
-target_include_directories(fabsim_core PUBLIC include)
-target_link_libraries(fabsim_core PUBLIC)
+# -------------------------
+# Fabsim Core Library
+# -------------------------
+file(GLOB FABSIM_CORE_SRC src/*.cpp)
+add_library(fabsim_core ${FABSIM_CORE_SRC})
 
-# ---- CLI Tool ----
-add_executable(fab src/main.cpp)
-target_link_libraries(fab PUBLIC fabsim_core)
-
-# ---- GUI ----
-add_executable(fabgui
-    gui/gui.cpp
-    gui/main.cpp
-    gui/viewer.cpp
+target_include_directories(fabsim_core PUBLIC
+    include
+    ${eigen_SOURCE_DIR}
 )
 
-target_include_directories(fabgui PUBLIC include gui ${IMGUI_DIR})
-target_link_libraries(fabgui PUBLIC fabsim_core imgui glfw glad)
+target_link_libraries(fabsim_core PUBLIC Eigen3::Eigen)
+
+# -------------------------
+# Application Executable
+# -------------------------
+add_executable(fabsim_app src/main.cpp)
+
+target_link_libraries(fabsim_app PRIVATE
+    fabsim_core
+    imgui
+    glfw
+    glad
+    opengl32
+)
