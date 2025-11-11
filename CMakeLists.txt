@@ -27,7 +27,7 @@ FetchContent_Declare(
 FetchContent_MakeAvailable(tinyobjloader)
 
 # ----------------------------
-# GLAD (OpenGL loader)
+# GLAD
 # ----------------------------
 FetchContent_Declare(
     glad
@@ -36,9 +36,9 @@ FetchContent_Declare(
 )
 FetchContent_MakeAvailable(glad)
 
-# Create GLAD library target
+# GLAD library target (correct path for GLAD v2.x)
 add_library(glad_lib
-    ${glad_SOURCE_DIR}/src/glad.c
+    ${glad_SOURCE_DIR}/src/gl.c
 )
 target_include_directories(glad_lib PUBLIC
     ${glad_SOURCE_DIR}/include
@@ -55,54 +55,24 @@ FetchContent_Declare(
 FetchContent_MakeAvailable(glfw)
 
 # ----------------------------
-# fabcore
+# Executable
 # ----------------------------
-add_library(fabcore
-    src/sim.cpp
-    src/mesh.cpp
-    src/io.cpp
+add_executable(fabsim_gui
+    app/main.cpp
 )
 
-target_include_directories(fabcore PUBLIC
-    include
+target_include_directories(fabsim_gui PUBLIC
     ${eigen_SOURCE_DIR}
     ${tinyobjloader_SOURCE_DIR}
+    ${glad_SOURCE_DIR}/include
 )
 
-# ----------------------------
-# GUI build
-# ----------------------------
-option(BUILD_GUI "Build graphical interface" ON)
+target_link_libraries(fabsim_gui PRIVATE
+    glad_lib
+    glfw
+    OpenGL::GL
+)
 
-if (BUILD_GUI)
-    find_package(OpenGL REQUIRED)
-
-    add_executable(fabsim_gui
-        src/gui/main.cpp
-        src/gui/viewer.cpp
-    )
-
-    target_include_directories(fabsim_gui PUBLIC
-        include
-        ${glad_SOURCE_DIR}/include
-        ${eigen_SOURCE_DIR}
-        ${tinyobjloader_SOURCE_DIR}
-    )
-
-    target_link_libraries(fabsim_gui PRIVATE
-        fabcore
-        glad_lib
-        glfw
-        OpenGL::GL
-    )
-
-    if (WIN32)
-        target_link_libraries(fabsim_gui PRIVATE opengl32)
-    endif()
+if (WIN32)
+    target_link_libraries(fabsim_gui PRIVATE opengl32)
 endif()
-
-# ----------------------------
-# CLI Build
-# ----------------------------
-add_executable(fabsim src/cli/main.cpp)
-target_link_libraries(fabsim PRIVATE fabcore)
