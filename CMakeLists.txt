@@ -6,9 +6,9 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 include(FetchContent)
 
-# -------------------------
-# Fetch Eigen
-# -------------------------
+# --------------------------------------------------
+# Eigen
+# --------------------------------------------------
 FetchContent_Declare(
     eigen
     GIT_REPOSITORY https://gitlab.com/libeigen/eigen.git
@@ -16,9 +16,9 @@ FetchContent_Declare(
 )
 FetchContent_MakeAvailable(eigen)
 
-# -------------------------
-# Fetch GLFW
-# -------------------------
+# --------------------------------------------------
+# GLFW
+# --------------------------------------------------
 FetchContent_Declare(
     glfw
     GIT_REPOSITORY https://github.com/glfw/glfw.git
@@ -26,9 +26,9 @@ FetchContent_Declare(
 )
 FetchContent_MakeAvailable(glfw)
 
-# -------------------------
-# Fetch GLAD
-# -------------------------
+# --------------------------------------------------
+# GLAD (we compile it ourselves → guaranteed target)
+# --------------------------------------------------
 FetchContent_Declare(
     glad
     GIT_REPOSITORY https://github.com/Dav1dde/glad.git
@@ -36,9 +36,16 @@ FetchContent_Declare(
 )
 FetchContent_MakeAvailable(glad)
 
-# -------------------------
-# ImGui
-# -------------------------
+add_library(glad STATIC
+    ${glad_SOURCE_DIR}/src/glad.c
+)
+target_include_directories(glad PUBLIC
+    ${glad_SOURCE_DIR}/include
+)
+
+# --------------------------------------------------
+# IMGUI
+# --------------------------------------------------
 add_library(imgui
     3rdparty/imgui/imgui.cpp
     3rdparty/imgui/imgui_demo.cpp
@@ -54,26 +61,14 @@ target_include_directories(imgui PUBLIC
     3rdparty/imgui/backends
     ${glfw_SOURCE_DIR}/include
     ${glad_SOURCE_DIR}/include
-    ${glad_BINARY_DIR}/include     # <- FIX #1
 )
 
-target_compile_definitions(imgui PUBLIC IMGUI_IMPL_OPENGL_LOADER_GLAD)  # <- FIX #2
+target_link_libraries(imgui PUBLIC glfw glad)
 
-target_link_libraries(imgui PUBLIC
-    glfw
-    glad::glad
-)
-
-# -------------------------
-# Fabsim Core Library
-# -------------------------
-file(GLOB FABSIM_CORE_SRC
-    src/*.cpp
-)
-
-# REMOVE main.cpp FROM CORE  (FIX #3)
-list(REMOVE_ITEM FABSIM_CORE_SRC ${CMAKE_CURRENT_SOURCE_DIR}/src/main.cpp)
-
+# --------------------------------------------------
+# Fabsim core
+# --------------------------------------------------
+file(GLOB FABSIM_CORE_SRC src/*.cpp)
 add_library(fabsim_core ${FABSIM_CORE_SRC})
 
 target_include_directories(fabsim_core PUBLIC
@@ -83,21 +78,15 @@ target_include_directories(fabsim_core PUBLIC
 
 target_link_libraries(fabsim_core PUBLIC Eigen3::Eigen)
 
-# -------------------------
-# Application Executable
-# -------------------------
+# --------------------------------------------------
+# Executable
+# --------------------------------------------------
 add_executable(fabsim_app src/main.cpp)
-
-target_include_directories(fabsim_app PRIVATE
-    3rdparty/imgui
-    3rdparty/imgui/backends
-)
 
 target_link_libraries(fabsim_app PRIVATE
     fabsim_core
     imgui
     glfw
-    glad::glad
+    glad
     opengl32
 )
-
