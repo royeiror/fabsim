@@ -61,7 +61,7 @@ target_compile_definitions(imgui PUBLIC IMGUI_IMPL_OPENGL_LOADER_GLAD)  # <- FIX
 
 target_link_libraries(imgui PUBLIC
     glfw
-    glad
+    glad::glad
 )
 
 # -------------------------
@@ -97,7 +97,7 @@ target_link_libraries(fabsim_app PRIVATE
     fabsim_core
     imgui
     glfw
-    glad
+    glad::glad
     opengl32
 )
 
