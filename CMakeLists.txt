@@ -18,11 +18,10 @@ FetchContent_Declare(
 )
 FetchContent_MakeAvailable(eigen)
 
-# tinyobjloader (header-only)
 FetchContent_Declare(
-  tinyobjloader
-  GIT_REPOSITORY https://github.com/tinyobjloader/tinyobjloader.git
-  GIT_TAG v2.0.0
+    tinyobjloader
+    GIT_REPOSITORY https://github.com/tinyobjloader/tinyobjloader.git
+    GIT_TAG v1.0.6
 )
 FetchContent_MakeAvailable(tinyobjloader)
 
