@@ -77,6 +77,11 @@ target_link_libraries(fabsim_core PUBLIC Eigen3::Eigen)
 # -------------------------
 add_executable(fabsim_app src/main.cpp)
 
+target_include_directories(fabsim_app PRIVATE
+    3rdparty/imgui
+    3rdparty/imgui/backends
+)
+
 target_link_libraries(fabsim_app PRIVATE
     fabsim_core
     imgui
@@ -84,3 +89,4 @@ target_link_libraries(fabsim_app PRIVATE
     glad
     opengl32
 )
+
