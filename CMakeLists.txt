@@ -7,7 +7,7 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 include(FetchContent)
 
 # -------------------------
-# Fetch Eigen automatically
+# Fetch Eigen
 # -------------------------
 FetchContent_Declare(
     eigen
@@ -17,7 +17,7 @@ FetchContent_Declare(
 FetchContent_MakeAvailable(eigen)
 
 # -------------------------
-# GLAD + GLFW
+# Fetch GLFW
 # -------------------------
 FetchContent_Declare(
     glfw
@@ -26,6 +26,9 @@ FetchContent_Declare(
 )
 FetchContent_MakeAvailable(glfw)
 
+# -------------------------
+# Fetch GLAD
+# -------------------------
 FetchContent_Declare(
     glad
     GIT_REPOSITORY https://github.com/Dav1dde/glad.git
@@ -51,18 +54,26 @@ target_include_directories(imgui PUBLIC
     3rdparty/imgui/backends
     ${glfw_SOURCE_DIR}/include
     ${glad_SOURCE_DIR}/include
+    ${glad_BINARY_DIR}/include     # <- FIX #1
 )
+
+target_compile_definitions(imgui PUBLIC IMGUI_IMPL_OPENGL_LOADER_GLAD)  # <- FIX #2
 
 target_link_libraries(imgui PUBLIC
     glfw
     glad
 )
 
-
 # -------------------------
 # Fabsim Core Library
 # -------------------------
-file(GLOB FABSIM_CORE_SRC src/*.cpp)
+file(GLOB FABSIM_CORE_SRC
+    src/*.cpp
+)
+
+# REMOVE main.cpp FROM CORE  (FIX #3)
+list(REMOVE_ITEM FABSIM_CORE_SRC ${CMAKE_CURRENT_SOURCE_DIR}/src/main.cpp)
+
 add_library(fabsim_core ${FABSIM_CORE_SRC})
 
 target_include_directories(fabsim_core PUBLIC
