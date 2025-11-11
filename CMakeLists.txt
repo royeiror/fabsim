@@ -49,7 +49,15 @@ add_library(imgui
 target_include_directories(imgui PUBLIC
     3rdparty/imgui
     3rdparty/imgui/backends
+    ${glfw_SOURCE_DIR}/include
+    ${glad_SOURCE_DIR}/include
 )
+
+target_link_libraries(imgui PUBLIC
+    glfw
+    glad
+)
+
 
 # -------------------------
 # Fabsim Core Library
