@@ -4,7 +4,6 @@ project(fabsim LANGUAGES C CXX)
 set(CMAKE_CXX_STANDARD 14)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-# FetchContent is used to automatically download dependencies
 include(FetchContent)
 
 # ---------------------- EIGEN ----------------------
@@ -30,12 +29,8 @@ FetchContent_Declare(
   GIT_TAG v0.1.36
 )
 FetchContent_MakeAvailable(glad)
-
-# glad cmake default doesn't create a target, so we define one
-add_library(glad STATIC
-  ${glad_SOURCE_DIR}/src/glad.c
-)
-target_include_directories(glad PUBLIC ${glad_SOURCE_DIR}/include)
+# glad's own cmake exports a library target named: glad
+# No manual add_library here.
 
 # ---------------------- IMGUI ----------------------
 FetchContent_Declare(
@@ -59,6 +54,8 @@ target_include_directories(imgui PUBLIC
   ${imgui_SOURCE_DIR}
   ${imgui_SOURCE_DIR}/backends
 )
+
+# Link imgui to glad + glfw
 target_link_libraries(imgui PUBLIC glfw glad)
 
 # ---------------------- Application ----------------------
@@ -71,12 +68,17 @@ target_include_directories(fabsim_app PUBLIC
   ${eigen_SOURCE_DIR}
 )
 
+# Link executable to the correct targets
 target_link_libraries(fabsim_app
   PRIVATE
     glfw
     glad
     imgui
 )
+
+if (WIN32)
+  target_compile_definitions(fabsim_app PRIVATE "_CRT_SECURE_NO_WARNINGS")
+endif()
 
 # Windows: ensure proper subsystem
 if (WIN32)
