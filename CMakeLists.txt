@@ -5,8 +5,12 @@ set(CMAKE_CXX_STANDARD 14)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 include(FetchContent)
-include_directories(${CMAKE_SOURCE_DIR}/extern/fsim/include)
 
+# ---------------------- Include paths ----------------------
+include_directories(
+  ${CMAKE_SOURCE_DIR}/include
+  ${CMAKE_SOURCE_DIR}/extern/fsim/include
+)
 
 # ---------------------- EIGEN ----------------------
 FetchContent_Declare(
@@ -17,7 +21,6 @@ FetchContent_Declare(
 FetchContent_MakeAvailable(eigen)
 
 # ---------------------- GLFW ----------------------
-# Disable GLFW tests, examples, and docs (they cause CI failures)
 set(GLFW_BUILD_EXAMPLES OFF CACHE BOOL "" FORCE)
 set(GLFW_BUILD_TESTS OFF CACHE BOOL "" FORCE)
 set(GLFW_BUILD_DOCS OFF CACHE BOOL "" FORCE)
@@ -36,8 +39,6 @@ FetchContent_Declare(
   GIT_TAG v0.1.36
 )
 FetchContent_MakeAvailable(glad)
-# glad's own cmake exports a library target named: glad
-# No manual add_library here.
 
 # ---------------------- IMGUI ----------------------
 FetchContent_Declare(
@@ -61,27 +62,25 @@ target_include_directories(imgui PUBLIC
   ${imgui_SOURCE_DIR}
   ${imgui_SOURCE_DIR}/backends
 )
-
-# Link imgui to glad + glfw
 target_link_libraries(imgui PUBLIC glfw glad)
 
 # ---------------------- Application ----------------------
-file(GLOB FABSIM_SRC
-  src/*.cpp
-  src/fsim/*.cpp
+# Collect ALL .cpp files recursively (includes util + fsim)
+file(GLOB_RECURSE FABSIM_SOURCES
+  "src/*.cpp"
+  "src/util/*.cpp"
+  "extern/fsim/src/*.cpp"
 )
 
-
-add_executable(fabsim_app ${FABSIM_SRC})
+add_executable(fabsim_app ${FABSIM_SOURCES})
 
 target_include_directories(fabsim_app PUBLIC
-  ${PROJECT_SOURCE_DIR}
   ${PROJECT_SOURCE_DIR}/include
+  ${PROJECT_SOURCE_DIR}/extern/fsim/include
   ${eigen_SOURCE_DIR}
 )
 
-
-# Link executable to the correct targets
+# ---------------------- Linking ----------------------
 target_link_libraries(fabsim_app
   PRIVATE
     glfw
@@ -89,11 +88,8 @@ target_link_libraries(fabsim_app
     imgui
 )
 
+# ---------------------- Windows-specific ----------------------
 if (WIN32)
-  target_compile_definitions(fabsim_app PRIVATE "_CRT_SECURE_NO_WARNINGS")
-endif()
-
-# Windows: ensure proper subsystem
-if (WIN32)
+  target_link_libraries(fabsim_app PRIVATE opengl32)
   target_compile_definitions(fabsim_app PRIVATE "_CRT_SECURE_NO_WARNINGS")
 endif()
