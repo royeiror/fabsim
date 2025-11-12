@@ -1,5 +1,5 @@
 #include <windows.h>
-#include "core.h"
+#include "core/core.h"
 
 LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) {
     switch(msg) {
