@@ -72,6 +72,21 @@ file(GLOB_RECURSE FABSIM_SOURCES
   "${CMAKE_SOURCE_DIR}/gui/*.cpp"
 )
 
+# -------------------------------------------------
+# EIGEN DOWNLOAD (if not found locally)
+# -------------------------------------------------
+include(FetchContent)
+
+FetchContent_Declare(
+  eigen
+  GIT_REPOSITORY https://gitlab.com/libeigen/eigen.git
+  GIT_TAG 3.4.0
+)
+FetchContent_MakeAvailable(eigen)
+
+target_include_directories(fabsim_app PUBLIC ${eigen_SOURCE_DIR})
+
+
 add_executable(fabsim_app ${FABSIM_SOURCES})
 
 target_include_directories(fabsim_app PUBLIC
