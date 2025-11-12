@@ -5,20 +5,21 @@ set(CMAKE_CXX_STANDARD 14)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 # -------------------------------------------------
-# EIGEN (local)
+# LOCAL INCLUDES
 # -------------------------------------------------
-include_directories(${CMAKE_SOURCE_DIR}/deps/eigen)
+include_directories(
+  ${CMAKE_SOURCE_DIR}/include
+  ${CMAKE_SOURCE_DIR}/include/fsim
+  ${CMAKE_SOURCE_DIR}/include/fsim/util
+  ${CMAKE_SOURCE_DIR}/core
+  ${CMAKE_SOURCE_DIR}/deps/eigen
+)
 
 # -------------------------------------------------
-# FSIM (local headers)
-# -------------------------------------------------
-include_directories(${CMAKE_SOURCE_DIR}/include)
-include_directories(${CMAKE_SOURCE_DIR}/include/fsim)
-
-# -------------------------------------------------
-# GLFW
+# GLFW / GLAD / IMGUI
 # -------------------------------------------------
 include(FetchContent)
+
 set(GLFW_BUILD_EXAMPLES OFF CACHE BOOL "" FORCE)
 set(GLFW_BUILD_TESTS OFF CACHE BOOL "" FORCE)
 set(GLFW_BUILD_DOCS OFF CACHE BOOL "" FORCE)
@@ -30,9 +31,6 @@ FetchContent_Declare(
 )
 FetchContent_MakeAvailable(glfw)
 
-# -------------------------------------------------
-# GLAD
-# -------------------------------------------------
 FetchContent_Declare(
   glad
   GIT_REPOSITORY https://github.com/Dav1dde/glad.git
@@ -40,9 +38,6 @@ FetchContent_Declare(
 )
 FetchContent_MakeAvailable(glad)
 
-# -------------------------------------------------
-# IMGUI
-# -------------------------------------------------
 FetchContent_Declare(
   imgui
   GIT_REPOSITORY https://github.com/ocornut/imgui.git
@@ -67,7 +62,7 @@ target_include_directories(imgui PUBLIC
 target_link_libraries(imgui PUBLIC glfw glad)
 
 # -------------------------------------------------
-# SOURCE FILES
+# FABSIM SOURCES
 # -------------------------------------------------
 file(GLOB_RECURSE FABSIM_SOURCES
   "${CMAKE_SOURCE_DIR}/src/*.cpp"
@@ -84,6 +79,7 @@ target_include_directories(fabsim_app PUBLIC
   ${PROJECT_SOURCE_DIR}/include
   ${PROJECT_SOURCE_DIR}/include/fsim
   ${PROJECT_SOURCE_DIR}/deps/eigen
+  ${PROJECT_SOURCE_DIR}/core
 )
 
 target_link_libraries(fabsim_app
@@ -94,7 +90,7 @@ target_link_libraries(fabsim_app
 )
 
 # -------------------------------------------------
-# WINDOWS SETTINGS
+# WINDOWS FIXES
 # -------------------------------------------------
 if (WIN32)
   target_compile_definitions(fabsim_app PRIVATE "_CRT_SECURE_NO_WARNINGS")
