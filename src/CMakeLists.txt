@@ -1,9 +1,14 @@
-file(GLOB FABSIM_CORE_SOURCES
-    *.cpp
+file(GLOB SRC_FILES
+    "${CMAKE_CURRENT_SOURCE_DIR}/*.cpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/util/*.cpp"
 )
 
-list(FILTER FABSIM_CORE_SOURCES EXCLUDE REGEX "main.cpp")
+add_executable(fabsim_app ${SRC_FILES})
 
-add_library(fabsim STATIC ${FABSIM_CORE_SOURCES})
-target_include_directories(fabsim PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/../include)
-target_link_libraries(fabsim PUBLIC Eigen3::Eigen)
+target_link_libraries(fabsim_app
+    PRIVATE
+        glad
+        glfw
+        imgui
+        opengl32
+)
