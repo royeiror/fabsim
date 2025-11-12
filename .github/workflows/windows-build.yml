@@ -20,10 +20,6 @@ jobs:
           choco install git -y
           choco install visualstudio2022buildtools --package-parameters "--add Microsoft.VisualStudio.Workload.VCTools --includeRecommended --passive --locale en-US" -y
 
-      - name: Checkout fsim dependency
-        run: |
-          git clone https://github.com/willcrichton/fsim extern/fsim || echo "fsim not available"
-
 
       - name: Configure CMake
         run: cmake -S . -B build -G "Visual Studio 17 2022" -A x64 -DCMAKE_POLICY_VERSION_MINIMUM="3.5"
