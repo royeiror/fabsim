@@ -1,19 +1,39 @@
-name: Windows-Build
+name: Build Fabsim (Windows)
 
 on:
   push:
+    branches: [ master ]
   pull_request:
+    branches: [ master ]
 
 jobs:
   build-windows:
     runs-on: windows-latest
 
     steps:
-      - name: Checkout
-        uses: actions/checkout@v3
+      - name: Checkout repository
+        uses: actions/checkout@v4
 
-      - name: Configure (CMake)
-        run: cmake -S . -B build -G "Visual Studio 17 2022" -A x64 -DBUILD_GUI=ON
+      - name: Install dependencies
+        run: |
+          choco install cmake --installargs 'ADD_CMAKE_TO_PATH=1' -y
+          choco install git -y
+          choco install visualstudio2022buildtools --package-parameters "--add Microsoft.VisualStudio.Workload.VCTools --includeRecommended --passive --locale en-US" -y
 
-      - name: Build (MSBuild)
+      - name: Configure CMake
+        run: cmake -S . -B build -G "Visual Studio 17 2022" -A x64
+
+      - name: Build
         run: cmake --build build --config Release
+
+      - name: Package artifact
+        run: |
+          mkdir artifact
+          copy build\Release\*.exe artifact\
+        shell: cmd
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: fabsim-windows
+          path: artifact/
