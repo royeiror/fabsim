@@ -73,10 +73,11 @@ file(GLOB FABSIM_SRC
 add_executable(fabsim_app ${FABSIM_SRC})
 
 target_include_directories(fabsim_app PUBLIC
-  ${PROJECT_SOURCE_DIR}/src
-  ${PROJECT_SOURCE_DIR}/src/fsim
+  ${PROJECT_SOURCE_DIR}
+  ${PROJECT_SOURCE_DIR}/fsim
   ${eigen_SOURCE_DIR}
 )
+
 
 # Link executable to the correct targets
 target_link_libraries(fabsim_app
