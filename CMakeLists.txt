@@ -4,23 +4,21 @@ project(fabsim LANGUAGES C CXX)
 set(CMAKE_CXX_STANDARD 14)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
+# -------------------------------------------------
+# EIGEN (local)
+# -------------------------------------------------
+include_directories(${CMAKE_SOURCE_DIR}/deps/eigen)
+
+# -------------------------------------------------
+# FSIM (local headers)
+# -------------------------------------------------
+include_directories(${CMAKE_SOURCE_DIR}/include)
+include_directories(${CMAKE_SOURCE_DIR}/include/fsim)
+
+# -------------------------------------------------
+# GLFW
+# -------------------------------------------------
 include(FetchContent)
-
-# ---------------------- Include paths ----------------------
-include_directories(
-  ${CMAKE_SOURCE_DIR}/include
-  ${CMAKE_SOURCE_DIR}/extern/fsim/include
-)
-
-# ---------------------- EIGEN ----------------------
-FetchContent_Declare(
-  eigen
-  GIT_REPOSITORY https://gitlab.com/libeigen/eigen.git
-  GIT_TAG 3.4.0
-)
-FetchContent_MakeAvailable(eigen)
-
-# ---------------------- GLFW ----------------------
 set(GLFW_BUILD_EXAMPLES OFF CACHE BOOL "" FORCE)
 set(GLFW_BUILD_TESTS OFF CACHE BOOL "" FORCE)
 set(GLFW_BUILD_DOCS OFF CACHE BOOL "" FORCE)
@@ -32,7 +30,9 @@ FetchContent_Declare(
 )
 FetchContent_MakeAvailable(glfw)
 
-# ---------------------- GLAD ----------------------
+# -------------------------------------------------
+# GLAD
+# -------------------------------------------------
 FetchContent_Declare(
   glad
   GIT_REPOSITORY https://github.com/Dav1dde/glad.git
@@ -40,7 +40,9 @@ FetchContent_Declare(
 )
 FetchContent_MakeAvailable(glad)
 
-# ---------------------- IMGUI ----------------------
+# -------------------------------------------------
+# IMGUI
+# -------------------------------------------------
 FetchContent_Declare(
   imgui
   GIT_REPOSITORY https://github.com/ocornut/imgui.git
@@ -64,23 +66,26 @@ target_include_directories(imgui PUBLIC
 )
 target_link_libraries(imgui PUBLIC glfw glad)
 
-# ---------------------- Application ----------------------
-# Collect ALL .cpp files recursively (includes util + fsim)
+# -------------------------------------------------
+# SOURCE FILES
+# -------------------------------------------------
 file(GLOB_RECURSE FABSIM_SOURCES
-  "src/*.cpp"
-  "src/util/*.cpp"
-  "extern/fsim/src/*.cpp"
+  "${CMAKE_SOURCE_DIR}/src/*.cpp"
+  "${CMAKE_SOURCE_DIR}/core/*.cpp"
+  "${CMAKE_SOURCE_DIR}/app/*.cpp"
+  "${CMAKE_SOURCE_DIR}/viewer/*.cpp"
+  "${CMAKE_SOURCE_DIR}/gui/*.cpp"
 )
 
 add_executable(fabsim_app ${FABSIM_SOURCES})
 
 target_include_directories(fabsim_app PUBLIC
+  ${PROJECT_SOURCE_DIR}
   ${PROJECT_SOURCE_DIR}/include
-  ${PROJECT_SOURCE_DIR}/extern/fsim/include
-  ${eigen_SOURCE_DIR}
+  ${PROJECT_SOURCE_DIR}/include/fsim
+  ${PROJECT_SOURCE_DIR}/deps/eigen
 )
 
-# ---------------------- Linking ----------------------
 target_link_libraries(fabsim_app
   PRIVATE
     glfw
@@ -88,8 +93,10 @@ target_link_libraries(fabsim_app
     imgui
 )
 
-# ---------------------- Windows-specific ----------------------
+# -------------------------------------------------
+# WINDOWS SETTINGS
+# -------------------------------------------------
 if (WIN32)
-  target_link_libraries(fabsim_app PRIVATE opengl32)
   target_compile_definitions(fabsim_app PRIVATE "_CRT_SECURE_NO_WARNINGS")
+  set_property(TARGET fabsim_app PROPERTY VS_DEBUGGER_WORKING_DIRECTORY "${CMAKE_SOURCE_DIR}")
 endif()
