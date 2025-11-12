@@ -76,7 +76,7 @@ add_executable(fabsim_app ${FABSIM_SRC})
 
 target_include_directories(fabsim_app PUBLIC
   ${PROJECT_SOURCE_DIR}
-  ${PROJECT_SOURCE_DIR}/fsim
+  ${PROJECT_SOURCE_DIR}/include
   ${eigen_SOURCE_DIR}
 )
 
