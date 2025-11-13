@@ -1,6 +1,7 @@
-#include "math.hpp"
+#define _USE_MATH_DEFINES
 #include <cmath>
 #include <algorithm>
+#include "math.hpp"
 
 namespace fsim {
 
@@ -14,7 +15,7 @@ double lerp(double a, double b, double t) {
 
 double smoothstep(double edge0, double edge1, double x) {
     x = clamp((x - edge0) / (edge1 - edge0), 0.0, 1.0);
-    return x * x * (3 - 2 * x);
+    return x * x * (3.0 - 2.0 * x);
 }
 
 double normalizeAngle(double angle) {
