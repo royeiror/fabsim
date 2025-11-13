@@ -64,6 +64,9 @@ file(GLOB_RECURSE FABSIM_SOURCES
   "${CMAKE_SOURCE_DIR}/app/*.cpp"
 )
 
+# Exclude duplicate main.cpp from src/
+list(FILTER FABSIM_SOURCES EXCLUDE REGEX ".*/src/main.cpp$")
+
 # ---------------------- EXECUTABLE ----------------------
 add_executable(fabsim_app ${FABSIM_SOURCES})
 
@@ -80,13 +83,13 @@ target_include_directories(fabsim_app PUBLIC
 
 target_link_libraries(fabsim_app PRIVATE glfw glad imgui)
 
-# ---------------------- WINDOWS SETTINGS ----------------------
 if (WIN32)
-  target_compile_definitions(fabsim_app PRIVATE
-    _CRT_SECURE_NO_WARNINGS
-    NOMINMAX
-  )
+  target_compile_definitions(fabsim_app PRIVATE _CRT_SECURE_NO_WARNINGS NOMINMAX)
+  target_link_libraries(fabsim_app PRIVATE opengl32)
 endif()
+
+message(STATUS "Building fabsim for Windows with GLFW + GLAD + ImGui + Eigen")
+
 
 # ---------------------- OUTPUT INFO ----------------------
 message(STATUS "Building fabsim for Windows with GLFW + GLAD + ImGui + Eigen")
