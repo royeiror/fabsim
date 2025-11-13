@@ -64,8 +64,11 @@ file(GLOB_RECURSE FABSIM_SOURCES
   "${CMAKE_SOURCE_DIR}/app/*.cpp"
 )
 
-# Exclude duplicate main.cpp from src/
+# ⚠️ Exclude duplicate main.cpp from src/
 list(FILTER FABSIM_SOURCES EXCLUDE REGEX ".*/src/main.cpp$")
+
+# ⚠️ Exclude duplicate math.cpp since geometry.cpp already defines those functions
+list(FILTER FABSIM_SOURCES EXCLUDE REGEX ".*/src/math.cpp$")
 
 # ---------------------- EXECUTABLE ----------------------
 add_executable(fabsim_app ${FABSIM_SOURCES})
