@@ -3,7 +3,6 @@ project(fabsim LANGUAGES C CXX)
 
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
-set(CMAKE_WINDOWS_EXPORT_ALL_SYMBOLS ON)
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
 
 include(FetchContent)
@@ -22,6 +21,9 @@ FetchContent_Declare(
   GIT_REPOSITORY https://github.com/glfw/glfw.git
   GIT_TAG 3.3.8
 )
+set(GLFW_BUILD_EXAMPLES OFF CACHE BOOL "" FORCE)
+set(GLFW_BUILD_TESTS OFF CACHE BOOL "" FORCE)
+set(GLFW_BUILD_DOCS OFF CACHE BOOL "" FORCE)
 FetchContent_MakeAvailable(glfw)
 
 # ---------------------- GLAD ----------------------
@@ -31,6 +33,30 @@ FetchContent_Declare(
   GIT_TAG v0.1.36
 )
 FetchContent_MakeAvailable(glad)
+
+# ---------------------- IMGUI ----------------------
+FetchContent_Declare(
+  imgui
+  GIT_REPOSITORY https://github.com/ocornut/imgui.git
+  GIT_TAG v1.90.3
+)
+FetchContent_MakeAvailable(imgui)
+
+set(IMGUI_SOURCES
+  ${imgui_SOURCE_DIR}/imgui.cpp
+  ${imgui_SOURCE_DIR}/imgui_draw.cpp
+  ${imgui_SOURCE_DIR}/imgui_tables.cpp
+  ${imgui_SOURCE_DIR}/imgui_widgets.cpp
+  ${imgui_SOURCE_DIR}/backends/imgui_impl_glfw.cpp
+  ${imgui_SOURCE_DIR}/backends/imgui_impl_opengl3.cpp
+)
+
+add_library(imgui STATIC ${IMGUI_SOURCES})
+target_include_directories(imgui PUBLIC
+  ${imgui_SOURCE_DIR}
+  ${imgui_SOURCE_DIR}/backends
+)
+target_link_libraries(imgui PUBLIC glfw glad)
 
 # ---------------------- SOURCE FILES ----------------------
 file(GLOB_RECURSE FABSIM_SOURCES
@@ -48,9 +74,11 @@ target_include_directories(fabsim_app PUBLIC
   ${CMAKE_SOURCE_DIR}/app
   ${eigen_SOURCE_DIR}
   ${glad_SOURCE_DIR}/include
+  ${imgui_SOURCE_DIR}
+  ${imgui_SOURCE_DIR}/backends
 )
 
-target_link_libraries(fabsim_app PRIVATE glfw glad)
+target_link_libraries(fabsim_app PRIVATE glfw glad imgui)
 
 # ---------------------- WINDOWS SETTINGS ----------------------
 if (WIN32)
@@ -61,5 +89,5 @@ if (WIN32)
 endif()
 
 # ---------------------- OUTPUT INFO ----------------------
-message(STATUS "Building fabsim for Windows with GLFW + GLAD + Eigen")
+message(STATUS "Building fabsim for Windows with GLFW + GLAD + ImGui + Eigen")
 message(STATUS "Output binary will be in: ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}")
