@@ -1,8 +1,10 @@
 cmake_minimum_required(VERSION 3.16)
-project(fabsim_app LANGUAGES CXX)
+project(fabsim LANGUAGES C CXX)
 
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
+set(CMAKE_WINDOWS_EXPORT_ALL_SYMBOLS ON)
+set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
 
 include(FetchContent)
 
@@ -12,18 +14,9 @@ FetchContent_Declare(
   GIT_REPOSITORY https://gitlab.com/libeigen/eigen.git
   GIT_TAG 3.4.0
 )
-set(EIGEN_BUILD_DOC OFF CACHE BOOL "" FORCE)
-set(EIGEN_BUILD_TESTING OFF CACHE BOOL "" FORCE)
-set(EIGEN_BUILD_PKGCONFIG OFF CACHE BOOL "" FORCE)
-set(EIGEN_BUILD_INSTALL OFF CACHE BOOL "" FORCE)
 FetchContent_MakeAvailable(eigen)
 
 # ---------------------- GLFW ----------------------
-# Disable examples/tests/docs to avoid building all those .exe files
-set(GLFW_BUILD_EXAMPLES OFF CACHE BOOL "" FORCE)
-set(GLFW_BUILD_TESTS OFF CACHE BOOL "" FORCE)
-set(GLFW_BUILD_DOCS OFF CACHE BOOL "" FORCE)
-
 FetchContent_Declare(
   glfw
   GIT_REPOSITORY https://github.com/glfw/glfw.git
@@ -31,13 +24,13 @@ FetchContent_Declare(
 )
 FetchContent_MakeAvailable(glfw)
 
-# ---------------------- INCLUDE PATHS ----------------------
-include_directories(
-  ${CMAKE_SOURCE_DIR}/include
-  ${CMAKE_SOURCE_DIR}/include/fsim
-  ${CMAKE_SOURCE_DIR}/src
-  ${eigen_SOURCE_DIR}
+# ---------------------- GLAD ----------------------
+FetchContent_Declare(
+  glad
+  GIT_REPOSITORY https://github.com/Dav1dde/glad.git
+  GIT_TAG v0.1.36
 )
+FetchContent_MakeAvailable(glad)
 
 # ---------------------- SOURCE FILES ----------------------
 file(GLOB_RECURSE FABSIM_SOURCES
@@ -47,7 +40,6 @@ file(GLOB_RECURSE FABSIM_SOURCES
 
 # ---------------------- EXECUTABLE ----------------------
 add_executable(fabsim_app ${FABSIM_SOURCES})
-target_link_libraries(fabsim_app PRIVATE glfw)
 
 target_include_directories(fabsim_app PUBLIC
   ${CMAKE_SOURCE_DIR}/include
@@ -55,10 +47,19 @@ target_include_directories(fabsim_app PUBLIC
   ${CMAKE_SOURCE_DIR}/src
   ${CMAKE_SOURCE_DIR}/app
   ${eigen_SOURCE_DIR}
+  ${glad_SOURCE_DIR}/include
 )
 
-if(MSVC)
-  add_definitions(-D_CRT_SECURE_NO_WARNINGS)
+target_link_libraries(fabsim_app PRIVATE glfw glad)
+
+# ---------------------- WINDOWS SETTINGS ----------------------
+if (WIN32)
+  target_compile_definitions(fabsim_app PRIVATE
+    _CRT_SECURE_NO_WARNINGS
+    NOMINMAX
+  )
 endif()
 
-message(STATUS "Configured fabsim_app for Windows build")
+# ---------------------- OUTPUT INFO ----------------------
+message(STATUS "Building fabsim for Windows with GLFW + GLAD + Eigen")
+message(STATUS "Output binary will be in: ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}")
