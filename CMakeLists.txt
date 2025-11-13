@@ -89,8 +89,3 @@ if (WIN32)
 endif()
 
 message(STATUS "Building fabsim for Windows with GLFW + GLAD + ImGui + Eigen")
-
-
-# ---------------------- OUTPUT INFO ----------------------
-message(STATUS "Building fabsim for Windows with GLFW + GLAD + ImGui + Eigen")
-message(STATUS "Output binary will be in: ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}")
