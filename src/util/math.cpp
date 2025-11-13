@@ -1,35 +1,44 @@
-#define _USE_MATH_DEFINES
+#include "fsim/math.hpp"
 #include <cmath>
-#include <algorithm>
-#include "math.hpp"
 
 namespace fsim {
 
+// Clamp value between [minVal, maxVal]
 double clamp(double x, double minVal, double maxVal) {
-    return std::max(minVal, std::min(maxVal, x));
+    return std::max(minVal, std::min(x, maxVal));
 }
 
+// Linear interpolation
 double lerp(double a, double b, double t) {
     return a + t * (b - a);
 }
 
+// Smoothstep interpolation (Hermite curve)
 double smoothstep(double edge0, double edge1, double x) {
     x = clamp((x - edge0) / (edge1 - edge0), 0.0, 1.0);
-    return x * x * (3.0 - 2.0 * x);
+    return x * x * (3 - 2 * x);
 }
 
+// Normalize angle to range [-π, π)
 double normalizeAngle(double angle) {
-    while (angle > M_PI) angle -= 2.0 * M_PI;
-    while (angle < -M_PI) angle += 2.0 * M_PI;
-    return angle;
+    constexpr double PI = 3.14159265358979323846;
+    constexpr double TWO_PI = 2.0 * PI;
+    angle = std::fmod(angle + PI, TWO_PI);
+    if (angle < 0)
+        angle += TWO_PI;
+    return angle - PI;
 }
 
+// Degrees to radians
 double deg2rad(double deg) {
-    return deg * (M_PI / 180.0);
+    constexpr double PI = 3.14159265358979323846;
+    return deg * (PI / 180.0);
 }
 
+// Radians to degrees
 double rad2deg(double rad) {
-    return rad * (180.0 / M_PI);
+    constexpr double PI = 3.14159265358979323846;
+    return rad * (180.0 / PI);
 }
 
 } // namespace fsim
