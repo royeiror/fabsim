@@ -47,10 +47,9 @@ set(IMGUI_SOURCES
   ${imgui_SOURCE_DIR}/imgui_draw.cpp
   ${imgui_SOURCE_DIR}/imgui_widgets.cpp
   ${imgui_SOURCE_DIR}/imgui_tables.cpp
-  ${imgui_SOURCE_DIR}/imgui_demo.cpp   # <-- this one was missing!
+  ${imgui_SOURCE_DIR}/imgui_demo.cpp
   ${imgui_SOURCE_DIR}/backends/imgui_impl_glfw.cpp
   ${imgui_SOURCE_DIR}/backends/imgui_impl_opengl3.cpp
-
 )
 
 add_library(imgui STATIC ${IMGUI_SOURCES})
@@ -60,16 +59,22 @@ target_include_directories(imgui PUBLIC
 )
 target_link_libraries(imgui PUBLIC glfw glad)
 
+# ---------------------- tinyfiledialogs ----------------------
+add_library(tinyfiledialogs src/app/tinyfiledialogs.c)
+target_include_directories(tinyfiledialogs PUBLIC
+  ${CMAKE_SOURCE_DIR}/src/app
+)
+
 # ---------------------- SOURCE FILES ----------------------
 file(GLOB_RECURSE FABSIM_SOURCES
   "${CMAKE_SOURCE_DIR}/src/*.cpp"
   "${CMAKE_SOURCE_DIR}/app/*.cpp"
 )
 
-# ⚠️ Exclude duplicate main.cpp from src/
+# Exclude src/main.cpp
 list(FILTER FABSIM_SOURCES EXCLUDE REGEX ".*/src/main.cpp$")
 
-# ⚠️ Exclude duplicate math.cpp since geometry.cpp already defines those functions
+# Exclude old math.cpp duplicates
 list(FILTER FABSIM_SOURCES EXCLUDE REGEX ".*/src/math.cpp$")
 
 # ---------------------- EXECUTABLE ----------------------
@@ -86,11 +91,16 @@ target_include_directories(fabsim_app PUBLIC
   ${imgui_SOURCE_DIR}/backends
 )
 
-target_link_libraries(fabsim_app PRIVATE glfw glad imgui)
+target_link_libraries(fabsim_app PRIVATE
+  glfw
+  glad
+  imgui
+  tinyfiledialogs
+)
 
 if (WIN32)
   target_compile_definitions(fabsim_app PRIVATE _CRT_SECURE_NO_WARNINGS NOMINMAX)
   target_link_libraries(fabsim_app PRIVATE opengl32)
 endif()
 
-message(STATUS "Building fabsim for Windows with GLFW + GLAD + ImGui + Eigen")
+message(STATUS "Building fabsim for Windows with GLFW + GLAD + ImGui + Eigen + tinyfiledialogs")
